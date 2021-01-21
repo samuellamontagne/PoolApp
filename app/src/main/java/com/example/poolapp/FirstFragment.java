@@ -34,6 +34,11 @@ import java.util.concurrent.Executors;
 
 public class FirstFragment extends Fragment {
 
+    //public int NB_GAMES_GOALIES = 3;
+    public int NB_GAMES = 6;
+    public int NB_POINTS_TRENDING = 6;
+    public int NB_POINTS_REALLY_TRENDING = 3;
+    public int NB_GAMES_REALLY_TRENDING = 3;
     public int nbTeams = 0;
     public int i = 0;
     public int nbPlayers = 0;
@@ -61,7 +66,6 @@ public class FirstFragment extends Fragment {
             tempPoints += curGame.getPoints();
         }
 
-        finalGame.setPoints(tempPoints);
         finalGame.setAssists(tempAssists);
         finalGame.setGoals(tempGoals);
 
@@ -131,9 +135,6 @@ public class FirstFragment extends Fragment {
                 @Override
                 public void run() {
                     showTotalTeamsTextView.setText(String.valueOf(nbTeams));
-                    /*showCurTeamTextView.setText(String.valueOf(i));
-                    showTotalPlayersTextView.setText(String.valueOf(nbPlayers));
-                    showCurPlayerTextView.setText(String.valueOf(players)); // update UI*/
                 }
             });
 
@@ -177,7 +178,6 @@ public class FirstFragment extends Fragment {
 
                 JSONArray rosterSize = (JSONArray) teamRoster.get("roster");
                 nbPlayers = rosterSize.size();
-                String[] playerList = new String[nbPlayers];
 
                 handler.post(new Runnable() {
                     @Override
@@ -188,11 +188,6 @@ public class FirstFragment extends Fragment {
 
                 for(players = 0; players < nbPlayers; players ++){
 
-                    int NB_GAMES_GOALIES = 3;
-                    int NB_GAMES = 6;
-                    int NB_POINTS_TRENDING = 6;
-                    int NB_POINTS_REALLY_TRENDING = 3;
-                    int NB_GAMES_REALLY_TRENDING = 3;
                     Players curPlayer = new Players();
 
                     JSONObject playerProfile = (JSONObject) rosterSize.get(players);
@@ -250,14 +245,12 @@ public class FirstFragment extends Fragment {
                                     Games curGame = new Games();
                                     JSONObject statsGameNo = (JSONObject) latestSeasonStats.get(statsPerGames);
                                     JSONObject statsGame = (JSONObject) statsGameNo.get("stat");
-                                    Long pointsGameLong = (Long) statsGame.get("points");
                                     Long goalsGameLong = (Long) statsGame.get("goals");
                                     Long assistsGameLong = (Long) statsGame.get("assists");
 
 
                                     curGame.setAssists(assistsGameLong.intValue());
                                     curGame.setGoals(goalsGameLong.intValue());
-                                    curGame.setPoints(pointsGameLong.intValue());
                                     curPlayer.setLastSixGamesPlayed(curGame);
                                 }
 
@@ -306,35 +299,23 @@ public class FirstFragment extends Fragment {
             URL poolLink = new URL("https://fantasy.espn.com/apis/v3/games/fhl/seasons/2021/segments/0/leagues/56450384?view=mRoster");
             JSONObject poolAll = connectAndGet.returnObj(poolLink);
             // id 1 = BILL, id 2 = CHUCK, id 3 = gignac, id4 = sam, id 5 = jay, id 6 = dubuc
+            String[] teams = new String[]{
+                    "Bill",
+                    "Chuck",
+                    "Gigi",
+                    "Sam",
+                    "Jay",
+                    "Dubuc"
+            };
+
             JSONArray allTeams = (JSONArray) poolAll.get("teams");
 
-            JSONObject billAll = (JSONObject) allTeams.get(0);
-            JSONObject chuckAll = (JSONObject) allTeams.get(1);
-            JSONObject gigiAll = (JSONObject) allTeams.get(2);
-            JSONObject samAll = (JSONObject) allTeams.get(3);
-            JSONObject jayAll = (JSONObject) allTeams.get(4);
-            JSONObject dubucAll = (JSONObject) allTeams.get(5);
-
-            JSONObject billRoster = (JSONObject) billAll.get("roster");
-            JSONObject chuckRoster = (JSONObject) chuckAll.get("roster");
-            JSONObject gigiRoster = (JSONObject) gigiAll.get("roster");
-            JSONObject samRoster = (JSONObject) samAll.get("roster");
-            JSONObject jayRoster = (JSONObject) jayAll.get("roster");
-            JSONObject dubucRoster = (JSONObject) dubucAll.get("roster");
-
-            JSONArray billPlayers = (JSONArray) billRoster.get("entries");
-            JSONArray chuckPlayers = (JSONArray) chuckRoster.get("entries");
-            JSONArray gigiPlayers = (JSONArray) gigiRoster.get("entries");
-            JSONArray samPlayers = (JSONArray) samRoster.get("entries");
-            JSONArray jayPlayers = (JSONArray) jayRoster.get("entries");
-            JSONArray dubucPlayers = (JSONArray) dubucRoster.get("entries");
-
-            getAllPoolPlayers(billPlayers, poolPlayersTemp, "Bill");
-            getAllPoolPlayers(chuckPlayers, poolPlayersTemp, "Chuck");
-            getAllPoolPlayers(gigiPlayers, poolPlayersTemp, "Gigi");
-            getAllPoolPlayers(samPlayers, poolPlayersTemp, "Sam");
-            getAllPoolPlayers(jayPlayers, poolPlayersTemp, "Jay");
-            getAllPoolPlayers(dubucPlayers, poolPlayersTemp, "Dubuc");
+            for(int i = 0; i < teams.length; i++){
+                JSONObject teamsAll = (JSONObject) allTeams.get(i);
+                JSONObject roster = (JSONObject) teamsAll.get("roster");
+                JSONArray players = (JSONArray) roster.get("entries");
+                getAllPoolPlayers(players, poolPlayersTemp, teams[i]);
+            }
 
         } catch(Exception e) {
             e.printStackTrace();
