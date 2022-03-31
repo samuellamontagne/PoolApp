@@ -82,12 +82,18 @@ public class FirstFragment extends Fragment {
      * */
     public static void getAllPoolPlayers(JSONArray teamRoster, ArrayList<Players> playerList, String belongTo){
 
+        Players curPlayer;
+        JSONObject playerNo;
+        JSONObject playerPoolEntry;
+        JSONObject playerInfos;
+        String playerName;
+
         for(int j = 0; j < teamRoster.size(); j++){
-            Players curPlayer = new Players();
-            JSONObject playerNo = (JSONObject) teamRoster.get(j);
-            JSONObject playerPoolEntry = (JSONObject) playerNo.get("playerPoolEntry");
-            JSONObject playerInfos = (JSONObject) playerPoolEntry.get("player");
-            String playerName = (String) playerInfos.get("fullName");
+            curPlayer = new Players();
+            playerNo = (JSONObject) teamRoster.get(j);
+            playerPoolEntry = (JSONObject) playerNo.get("playerPoolEntry");
+            playerInfos = (JSONObject) playerPoolEntry.get("player");
+            playerName = (String) playerInfos.get("fullName");
             curPlayer.setFullName(playerName);
             curPlayer.setBelongTo(belongTo);
 
@@ -142,21 +148,21 @@ public class FirstFragment extends Fragment {
             JSONObject allDatesGames = (JSONObject) datesGames.get(0);
             JSONArray allGames = (JSONArray) allDatesGames.get("games");
 
-            for(int games = 0; games < 2*nbGames; games += 2) {
+            JSONObject teamsGame = (JSONObject) allGames.get(teams);
+            JSONObject teamsFromGame = (JSONObject) teamsGame.get("teams");
+            JSONObject homeTeam = (JSONObject) teamsFromGame.get("home");
+            JSONObject homeTeamStats = (JSONObject) homeTeam.get("team");
+            Long homeTeamIdLong = (Long) homeTeamStats.get("id");
+            String homeTeamName = (String) homeTeamStats.get("name");
+            int homeTeamId = homeTeamIdLong.intValue();
+            JSONObject awayTeam = (JSONObject) teamsFromGame.get("away");
+            JSONObject awayTeamStats = (JSONObject) awayTeam.get("team");
+            Long awayTeamIdLong = (Long) awayTeamStats.get("id");
+            String awayTeamName = (String) awayTeamStats.get("name");
+            int awayTeamId = awayTeamIdLong.intValue();
 
-                JSONObject teamsGame = (JSONObject) allGames.get(teams);
-                JSONObject teamsFromGame = (JSONObject) teamsGame.get("teams");
-                JSONObject homeTeam = (JSONObject) teamsFromGame.get("home");
-                JSONObject homeTeamStats = (JSONObject) homeTeam.get("team");
-                Long homeTeamIdLong = (Long) homeTeamStats.get("id");
-                String homeTeamName = (String) homeTeamStats.get("name");
-                int homeTeamId = homeTeamIdLong.intValue();
-                JSONObject awayTeam = (JSONObject) teamsFromGame.get("away");
-                JSONObject awayTeamStats = (JSONObject) awayTeam.get("team");
-                Long awayTeamIdLong = (Long) awayTeamStats.get("id");
-                String awayTeamName = (String) awayTeamStats.get("name");
-                int awayTeamId = awayTeamIdLong.intValue();
-
+            for(int games = 0; games < 2*nbGames; games += 2)
+            {
                 teamsId[games] = homeTeamId;
                 teamsId[games + 1] = awayTeamId;
                 teamsNames[games] = homeTeamName;
@@ -186,15 +192,21 @@ public class FirstFragment extends Fragment {
                     }
                 });
 
+                JSONObject playerProfile;
+                JSONObject playerInfo;
+                JSONObject playerPos;
+                String playerName;
+                Long playerIdLong;
+
                 for(players = 0; players < nbPlayers; players ++){
 
                     Players curPlayer = new Players();
 
-                    JSONObject playerProfile = (JSONObject) rosterSize.get(players);
-                    JSONObject playerInfo = (JSONObject) playerProfile.get("person");
-                    JSONObject playerPos = (JSONObject) playerProfile.get("position");
-                    String playerName = ((String) playerInfo.get("fullName"));
-                    Long playerIdLong = (Long) playerInfo.get("id");
+                    playerProfile = (JSONObject) rosterSize.get(players);
+                    playerInfo = (JSONObject) playerProfile.get("person");
+                    playerPos = (JSONObject) playerProfile.get("position");
+                    playerName = ((String) playerInfo.get("fullName"));
+                    playerIdLong = (Long) playerInfo.get("id");
                     playerId = playerIdLong.intValue();
 
                     curPlayer.setBelongTo("No one");
@@ -296,7 +308,7 @@ public class FirstFragment extends Fragment {
     private void getPoolPlayers(ArrayList<Players> poolPlayersTemp){
 
         try {
-            URL poolLink = new URL("https://fantasy.espn.com/apis/v3/games/fhl/seasons/2021/segments/0/leagues/56450384?view=mRoster");
+            URL poolLink = new URL("https://fantasy.espn.com/apis/v3/games/fhl/seasons/2022/segments/0/leagues/56450384?view=mRoster");
             JSONObject poolAll = connectAndGet.returnObj(poolLink);
             // id 1 = BILL, id 2 = CHUCK, id 3 = gignac, id4 = sam, id 5 = jay, id 6 = dubuc
             String[] teams = new String[]{
@@ -309,11 +321,12 @@ public class FirstFragment extends Fragment {
             };
 
             JSONArray allTeams = (JSONArray) poolAll.get("teams");
+            JSONObject teamsAll = null;
+            JSONObject roster = (JSONObject) teamsAll.get("roster");
+            JSONArray players = (JSONArray) roster.get("entries");
 
             for(int i = 0; i < teams.length; i++){
-                JSONObject teamsAll = (JSONObject) allTeams.get(i);
-                JSONObject roster = (JSONObject) teamsAll.get("roster");
-                JSONArray players = (JSONArray) roster.get("entries");
+                teamsAll = (JSONObject) allTeams.get(i);
                 getAllPoolPlayers(players, poolPlayersTemp, teams[i]);
             }
 
